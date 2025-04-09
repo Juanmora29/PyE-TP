@@ -100,16 +100,14 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
             color = "blue", vjust = 1.5) + # Anotar mediana
   theme_minimal()
 
-
 #--------------------REVISAR--------------------------------------
 # Agrupar ESTADO en categorías generales
-datos_ocupacion <- datos_combinados %>%
+datos_ocupacion <- datos_combinados %>% filter(ESTADO != "0") %>% 
   mutate(ESTADO_group = case_when(
-    ESTADO %in% c("0") ~ "Ns/Nc",
-    ESTADO %in% c("1") ~ "Ocupado",
-    ESTADO %in% c("2") ~ "Desocupado",
-    ESTADO %in% c("3") ~ "Inactivo",
-    TRUE ~ "Menor de 10"
+  ESTADO %in% c("1") ~ "Ocupado",
+  ESTADO %in% c("2") ~ "Desocupado",
+  ESTADO %in% c("3") ~ "Inactivo",
+  TRUE ~ "Otro"
   ))
 
 
