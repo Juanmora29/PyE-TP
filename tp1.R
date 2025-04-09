@@ -2,15 +2,11 @@ install.packages("eph")
 install.packages("tidyverse")
 library(eph)
 library(tidyverse)
-
-
-
+library(ggplot2)
+library(scales)  # Para formato de números en el eje Y
 
 # Descargar los microdatos del primer trimestre de 2024
 datos <- get_microdata(year = 2024, trimester = 1, type = "individual")
-
-
-
 
 # -------------------------------------------------------------------
 #  Filtramos los datos para incluir solo personas en edad laboral (18-65 años)
@@ -18,92 +14,36 @@ datos <- get_microdata(year = 2024, trimester = 1, type = "individual")
 datos_edad <- datos %>%
   filter(CH06 >= 18 & CH06 <= 65)
 
-
-
-
 # -------------------------------------------------------------------
 # Creamos un subconjuntos para argentinos y extranjeros
 # -------------------------------------------------------------------
-
 
 argentinos <- datos_edad %>%
   filter(CH15 %in% c("1", "2", "3")) %>%
   mutate(origen = "Argentinos")
 
-
-
-
 extranjeros <- datos_edad %>%
   filter(CH15 %in% c("4", "5")) %>%
   mutate(origen = "Extranjeros")
 
-
-
-
-# -------------------------------------------------------------------
-# Visualizamos la distribución del nivel educativo por origen
-# -------------------------------------------------------------------
-
-
-par(mfrow = c(1, 2))  # Mostrar gráficos lado a lado
-barplot(table(argentinos$NIVEL_ED),
-        main = expression("Nivel Educativo de Argentinos (" * pi[1] * ")"),
-        horiz = TRUE,
-        col = "blue")
-barplot(table(extranjeros$NIVEL_ED),
-        main = expression("Nivel Educativo de Extranjeros (" * pi[2] * ")"),
-        horiz = TRUE,
-        col = "red")
-par(mfrow = c(1,1))  # Resetear el layout gráfico
-
-
-# -------------------------------------------------------------------
-# Calculamos estadísticas descriptivas del ingreso total individual (P47T)
-# -------------------------------------------------------------------
-
-
-ingresos_validos <- datos_edad %>% 
-  filter(P47T > 0)
-
-
-# Resumen y cálculo de la media
-print(summary(ingresos_validos$P47T))
-mean_ingreso <- mean(ingresos_validos$P47T, na.rm = TRUE)
-print(paste("Ingreso promedio:", mean_ingreso))
-
-
 # -------------------------------------------------------------------
 # Visualizacion avanzada con ggplot2
 # -------------------------------------------------------------------
-library(ggplot2)
-
-
-
 
 # Combinar ambos subconjuntos
 datos_combinados <- bind_rows(argentinos, extranjeros)
 
-
-
-
 # Agrupar el nivel educativo en categorías generales
 datos_combinados <- datos_combinados %>%
   mutate(NIVEL_ED_group = case_when(
-    NIVEL_ED %in% c("1", "2", "3", “7”) ~ "Inferior",
+    NIVEL_ED %in% c("1", "2", "3", "7") ~ "Bajo",
     NIVEL_ED %in% c("4", "5") ~ "Medio",
     NIVEL_ED %in% c("6") ~ "Superior",
     TRUE ~ "Otro"
   ))
 
-
-
-
 # Filtrar ingresos válidos (P47T > 0, asumiendo que -9 es inválido)
-datos_ingresos <- datos_combinados %>%
-  filter(P47T > 0)
-
-
-
+datos_ingresos <- datos_combinados %>% filter(P47T > 0)
 
 resumen <- datos_ingresos %>%
   group_by(origen, NIVEL_ED_group) %>%
@@ -119,12 +59,11 @@ resumen <- datos_ingresos %>%
 	.groups = "drop"
   )
 
-
 resumen
 
 
 ### PORPORCION RELATIVA DE NIVEL ED POR ORIGEN
-datos_ingresos %>%
+datos_combinados %>%
   group_by(origen, NIVEL_ED_group) %>%
   summarise(n = n(), .groups = "drop") %>%
   group_by(origen) %>%
@@ -140,16 +79,9 @@ datos_ingresos %>%
   ) +
   theme_minimal()
 
-
-
-
-library(scales)  # Para formato de números en el eje Y
-
-
 # Filtrar ingresos válidos y eliminar outliers (percentil 99)
 limite_superior <- quantile(datos_ingresos$P47T, 0.99, na.rm = TRUE)
 datos_filtrados <- datos_ingresos %>% filter(P47T > 0 & P47T < limite_superior)
-
 
 # Gráfico ajustando los valores del eje Y
 ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
@@ -161,36 +93,6 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
 	x = "Origen",
 	y = "Ingreso total individual (P47T)"
   ) +
-  theme_minimal()
-
-
-
-
-##### MAS CONCENTRADO EN LA MEDIA Y MEDIANA
-
-
-# Calcular media y mediana por cada grupo (origen)
-estadisticas <- datos_filtrados %>%
-  group_by(origen) %>%
-  summarise(
-    media = mean(P47T, na.rm = TRUE),
-    mediana = median(P47T, na.rm = TRUE)
-  )
-
-
-# Graficar con anotaciones de media y mediana
-ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
-  geom_boxplot(width = 0.5, alpha = 0.7) +  # Ajusta el ancho de las cajas
-  stat_summary(fun = mean, geom = "point", shape = 20, size = 3, color = "red") +  # Media en rojo
-  geom_hline(yintercept = median(datos_filtrados$P47T, na.rm = TRUE),
-             linetype = "dashed", color = "blue") +  # Mediana en azul
-  scale_y_continuous(labels = function(x) paste0(x / 1000, "K")) +  # Expresar en miles
-  coord_cartesian(ylim = c(0, 500000)) +  # Ajuste del eje Y
-  labs(
-    title = "Comparación de ingresos entre argentinos y extranjeros",
-    x = "Origen",
-    y = "Ingreso total individual (en miles de pesos)"
-  ) +
   # Agregar texto con las estadísticas
   geom_text(data = estadisticas, aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
             color = "red", vjust = -1) + # Anotar media
@@ -201,7 +103,7 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
 
 #--------------------REVISAR--------------------------------------
 # Agrupar ESTADO en categorías generales
-datos_combinados2 <- datos_combinados %>%
+datos_ocupacion <- datos_combinados %>%
   mutate(ESTADO_group = case_when(
     ESTADO %in% c("0") ~ "Ns/Nc",
     ESTADO %in% c("1") ~ "Ocupado",
@@ -212,7 +114,7 @@ datos_combinados2 <- datos_combinados %>%
 
 
 ########## Grafico ESTADO
-datos_combinados2 %>%
+datos_ocupacion %>%
   group_by(origen, ESTADO_group) %>%
   summarise(n = n(), .groups = "drop") %>%
   group_by(origen) %>%
@@ -228,9 +130,7 @@ datos_combinados2 %>%
   ) +
   theme_minimal()
 
-
 ###GRAFICO PARA VISUALIZAR PROMEDIO DE EDADES POR ORIGEN
-
 
 # Calcular estadísticas por grupo para usar en las etiquetas
 estadisticas_paraedades <- datos_combinados %>% 
