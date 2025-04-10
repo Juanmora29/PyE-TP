@@ -3,7 +3,7 @@ install.packages("tidyverse")
 library(eph)
 library(tidyverse)
 library(ggplot2)
-library(scales)  # Para formato de números en el eje Y
+library(scales)  
 
 # Descargar los microdatos del primer trimestre de 2024
 datos <- get_microdata(year = 2024, trimester = 1, type = "individual")
@@ -57,19 +57,24 @@ resumen <- datos_ingresos %>%
 
 ### GRAFICO DE DISTRIBUCION RELATIVA DEL NIVEL EDUCATIVO POR ORIGEN
 
-datos_combinados %>%
+# Calcular las proporciones antes de graficar
+datos_prop <- datos_combinados %>%
   group_by(origen, NIVEL_ED_group) %>%
   summarise(n = n(), .groups = "drop") %>%
   group_by(origen) %>%
-  mutate(prop = n / sum(n)) %>%
-  ggplot(aes(x = NIVEL_ED_group, y = prop, fill = origen)) +
+  mutate(prop = n / sum(n)) 
+
+# Crear el gráfico con etiquetas sobre las barras
+ggplot(datos_prop, aes(x = NIVEL_ED_group, y = prop, fill = origen)) +
   geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = scales::percent(prop, accuracy = 0.1)), 
+            position = position_dodge(width = 0.9), vjust = -0.5, size = 4) +  
   scale_y_continuous(labels = scales::percent_format()) +
   labs(
-	title = "Distribución relativa del nivel educativo por origen",
-	x = "Nivel Educativo (agrupado)",
-	y = "Proporción dentro de cada grupo (%)",
-	fill = "Origen"
+    title = "Distribución relativa del nivel educativo por origen",
+    x = "Nivel Educativo (agrupado)",
+    y = "Proporción dentro de cada grupo (%)",
+    fill = "Origen"
   ) +
   theme_minimal()
 
@@ -96,33 +101,40 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
   ) +
   # Agregar texto con las estadísticas
   geom_text(data = estadisticas, aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
-            color = "red", vjust = -9.2) + # Anotar media
+            color = "red", vjust = -6.3) + # Anotar media
   geom_text(data = estadisticas, aes(x = origen, y = mediana, label = paste0("Mediana: ", round(mediana, 0))),
-            color = "blue", vjust = -5) + # Anotar mediana
+            color = "blue", vjust = -3) + # Anotar mediana
   theme_minimal()
 
 
 # GRAFICO DE OCUPACION LABORAL PARA ARGENTINOS Y EXTRANJEROS
 
-datos_ocupacion <- datos_combinados %>% filter(ESTADO != "0") %>% 
+# Filtrar datos de ocupación y crear la variable de agrupación ESTADO_group
+datos_ocupacion <- datos_combinados %>% 
+  filter(ESTADO != "0") %>% 
   mutate(ESTADO_group = case_when(
-  ESTADO %in% c("1") ~ "Ocupado",
-  ESTADO %in% c("2") ~ "Desocupado",
-  ESTADO %in% c("3") ~ "Inactivo",
-  TRUE ~ "Otro"
+    ESTADO %in% c("1") ~ "Ocupado",
+    ESTADO %in% c("2") ~ "Desocupado",
+    ESTADO %in% c("3") ~ "Inactivo",
+    TRUE ~ "Otro"
   ))
 
-datos_ocupacion %>%
+# Calcular proporciones para el gráfico
+datos_ocupacion_prop <- datos_ocupacion %>%
   group_by(origen, ESTADO_group) %>%
   summarise(n = n(), .groups = "drop") %>%
   group_by(origen) %>%
-  mutate(prop = n / sum(n)) %>%
-  ggplot(aes(x = ESTADO_group, y = prop, fill = origen)) +
-  geom_bar(stat = "identity", position = "dodge") +
+  mutate(prop = n / sum(n))
+
+# Gráfico de barras con etiquetas de proporción
+ggplot(datos_ocupacion_prop, aes(x = ESTADO_group, y = prop, fill = origen)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  geom_text(aes(label = scales::percent(prop, accuracy = 0.1)),
+            position = position_dodge(width = 0.9), vjust = -0.5, size = 4) +
   scale_y_continuous(labels = scales::percent_format()) +
   labs(
-    title = "Distribución relativa de la condicion de actividad por origen",
-    x = "Ocupacion (agrupado)",
+    title = "Distribución relativa de la condición de actividad por origen",
+    x = "Ocupación (agrupado)",
     y = "Proporción dentro de cada grupo (%)",
     fill = "Origen"
   ) +
