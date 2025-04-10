@@ -12,7 +12,8 @@ datos <- get_microdata(year = 2024, trimester = 1, type = "individual")
 #  Filtramos los datos para incluir solo personas en edad laboral (18-65 años)
 # -------------------------------------------------------------------
 datos_edad <- datos %>%
-  filter(CH06 >= 18 & CH06 <= 65)
+  filter(CH06 >= 18 & CH06 <= 65) %>%
+  filter(AGLOMERADO %in% c(33, 32, 2, 17, 13, 4, 23, 9, 31, 10, 15, 20))
 
 # -------------------------------------------------------------------
 # Creamos un subconjuntos para argentinos y extranjeros
@@ -86,8 +87,8 @@ limite_superior <- quantile(datos_ingresos$P47T, 0.99, na.rm = TRUE)
 estadisticas <- datos_combinados %>% 
   group_by(origen) %>%
   summarise(
-    media = mean(CH06, na.rm = TRUE),
-    mediana = median(CH06, na.rm = TRUE)
+    media = mean(P47T, na.rm = TRUE),
+    mediana = median(P47T, na.rm = TRUE)
   )
 
 ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
@@ -101,9 +102,9 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
   ) +
   # Agregar texto con las estadísticas
   geom_text(data = estadisticas, aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
-            color = "red", vjust = -6.3) + # Anotar media
+            color = "red", vjust = -3.3) + # Anotar media
   geom_text(data = estadisticas, aes(x = origen, y = mediana, label = paste0("Mediana: ", round(mediana, 0))),
-            color = "blue", vjust = -3) + # Anotar mediana
+            color = "blue", vjust = -2) + # Anotar mediana
   theme_minimal()
 
 
@@ -170,3 +171,23 @@ ggplot(datos_combinados, aes(x = origen, y = CH06, fill = origen)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+#Distribucion de extranjeros por aglomerado
+
+ 
+distribucion_extranjeros <- extranjeros %>% 
+  group_by(AGLOMERADO) %>% summarise(cantidad = n())
+
+distribucion_argentinos <- argentinos %>% 
+  group_by(AGLOMERADO) %>% summarise(cantidad = n())
+
+distribucion_extranjeros <- extranjeros %>%
+  group_by(AGLOMERADO) %>%
+  summarise(cantidad = n()) %>%
+  arrange(desc(cantidad)) %>%
+  mutate(acumulado = cumsum(cantidad))
+
+
+install.packages("writexl")
+library(writexl)
+
+write_xlsx(distribucion_extranjeros, "distribucion_extranjeros.xlsx")
