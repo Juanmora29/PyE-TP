@@ -26,10 +26,6 @@ extranjeros <- datos_edad %>%
   filter(CH15 %in% c("4", "5")) %>%
   mutate(origen = "Extranjeros")
 
-# -------------------------------------------------------------------
-# Visualizacion avanzada con ggplot2
-# -------------------------------------------------------------------
-
 # Combinar ambos subconjuntos
 datos_combinados <- bind_rows(argentinos, extranjeros)
 
@@ -42,7 +38,7 @@ datos_combinados <- datos_combinados %>%
     TRUE ~ "Otro"
   ))
 
-# Filtrar ingresos válidos (P47T > 0, asumiendo que -9 es inválido)
+# Filtrar ingresos válidos 
 datos_ingresos <- datos_combinados %>% filter(P47T > 0)
 
 resumen <- datos_ingresos %>%
@@ -59,10 +55,8 @@ resumen <- datos_ingresos %>%
 	.groups = "drop"
   )
 
-resumen
+### GRAFICO DE DISTRIBUCION RELATIVA DEL NIVEL EDUCATIVO POR ORIGEN
 
-
-### PORPORCION RELATIVA DE NIVEL ED POR ORIGEN
 datos_combinados %>%
   group_by(origen, NIVEL_ED_group) %>%
   summarise(n = n(), .groups = "drop") %>%
@@ -79,11 +73,18 @@ datos_combinados %>%
   ) +
   theme_minimal()
 
-# Filtrar ingresos válidos y eliminar outliers (percentil 99)
-limite_superior <- quantile(datos_ingresos$P47T, 0.99, na.rm = TRUE)
-datos_filtrados <- datos_ingresos %>% filter(P47T > 0 & P47T < limite_superior)
+# GRAFICO DE COMPARACION DE INGRESOS ENTRE ARGENTINOS Y EXTRANJEROS
 
-# Gráfico ajustando los valores del eje Y
+datos_filtrados <- datos_ingresos %>% filter(P47T > 0 & P47T < limite_superior)
+limite_superior <- quantile(datos_ingresos$P47T, 0.99, na.rm = TRUE)
+
+estadisticas <- datos_combinados %>% 
+  group_by(origen) %>%
+  summarise(
+    media = mean(CH06, na.rm = TRUE),
+    mediana = median(CH06, na.rm = TRUE)
+  )
+
 ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
   geom_boxplot(alpha = 0.7) +
   stat_summary(fun = mean, geom = "point", shape = 20, size = 4, color = "red") +  # Media en rojo
@@ -95,13 +96,14 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
   ) +
   # Agregar texto con las estadísticas
   geom_text(data = estadisticas, aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
-            color = "red", vjust = -1) + # Anotar media
+            color = "red", vjust = -9.2) + # Anotar media
   geom_text(data = estadisticas, aes(x = origen, y = mediana, label = paste0("Mediana: ", round(mediana, 0))),
-            color = "blue", vjust = 1.5) + # Anotar mediana
+            color = "blue", vjust = -5) + # Anotar mediana
   theme_minimal()
 
-#--------------------REVISAR--------------------------------------
-# Agrupar ESTADO en categorías generales
+
+# GRAFICO DE OCUPACION LABORAL PARA ARGENTINOS Y EXTRANJEROS
+
 datos_ocupacion <- datos_combinados %>% filter(ESTADO != "0") %>% 
   mutate(ESTADO_group = case_when(
   ESTADO %in% c("1") ~ "Ocupado",
@@ -110,8 +112,6 @@ datos_ocupacion <- datos_combinados %>% filter(ESTADO != "0") %>%
   TRUE ~ "Otro"
   ))
 
-
-########## Grafico ESTADO
 datos_ocupacion %>%
   group_by(origen, ESTADO_group) %>%
   summarise(n = n(), .groups = "drop") %>%
@@ -138,7 +138,6 @@ estadisticas_paraedades <- datos_combinados %>%
     mediana = median(CH06, na.rm = TRUE)
   )
 
-
 # Gráfico de boxplot de la edad (CH06) por origen con anotaciones
 ggplot(datos_combinados, aes(x = origen, y = CH06, fill = origen)) +
   geom_boxplot(width = 0.5, outlier.shape = NA, alpha = 0.7) +  # Boxplot sin outliers y con ancho ajustado
@@ -158,3 +157,4 @@ ggplot(datos_combinados, aes(x = origen, y = CH06, fill = origen)) +
        fill = "Origen") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
