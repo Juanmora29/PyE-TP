@@ -3,7 +3,7 @@ install.packages("tidyverse")
 library(eph)
 library(tidyverse)
 library(ggplot2)
-library(scales)  
+library(scales)
 
 # Descargar los microdatos del primer trimestre de 2024
 datos <- get_microdata(year = 2024, trimester = 1, type = "individual")
@@ -13,7 +13,6 @@ datos <- get_microdata(year = 2024, trimester = 1, type = "individual")
 # -------------------------------------------------------------------
 datos_edad <- datos %>%
   filter(CH06 >= 18 & CH06 <= 65) %>%
-  filter(AGLOMERADO %in% c(33, 32, 2, 17, 13, 4, 23, 9, 31, 10, 15, 20))
 
 # -------------------------------------------------------------------
 # Creamos un subconjuntos para argentinos y extranjeros
@@ -39,8 +38,8 @@ datos_combinados <- datos_combinados %>%
     TRUE ~ "Otro"
   ))
 
-# Filtrar ingresos válidos 
-datos_ingresos <- datos_combinados %>% filter(P47T > 0)
+# Filtrar ingresos válidos
+datos_ingresos <- datos_combinados %>% filter(P47T >= 0)
 
 resumen <- datos_ingresos %>%
   group_by(origen, NIVEL_ED_group) %>%
@@ -56,35 +55,35 @@ resumen <- datos_ingresos %>%
 	.groups = "drop"
   )
 
-### GRAFICO DE DISTRIBUCION RELATIVA DEL NIVEL EDUCATIVO POR ORIGEN
+### GRAFICO DE DISTRIBUCION RELATIVA DEL NIVEL DE EDUCACION POR ORIGEN
 
 # Calcular las proporciones antes de graficar
 datos_prop <- datos_combinados %>%
   group_by(origen, NIVEL_ED_group) %>%
   summarise(n = n(), .groups = "drop") %>%
   group_by(origen) %>%
-  mutate(prop = n / sum(n)) 
+  mutate(prop = n / sum(n))
 
 # Crear el gráfico con etiquetas sobre las barras
 ggplot(datos_prop, aes(x = NIVEL_ED_group, y = prop, fill = origen)) +
   geom_bar(stat = "identity", position = "dodge") +
-  geom_text(aes(label = scales::percent(prop, accuracy = 0.1)), 
-            position = position_dodge(width = 0.9), vjust = -0.5, size = 4) +  
+  geom_text(aes(label = scales::percent(prop, accuracy = 0.1)),
+            position = position_dodge(width = 0.9), vjust = -0.5, size = 4) +
   scale_y_continuous(labels = scales::percent_format()) +
   labs(
-    title = "Distribución relativa del nivel educativo por origen",
+    title = "Distribución relativa del nivel de educación por origen",
     x = "Nivel Educativo (agrupado)",
     y = "Proporción dentro de cada grupo (%)",
     fill = "Origen"
   ) +
   theme_minimal()
 
-# GRAFICO DE COMPARACION DE INGRESOS ENTRE ARGENTINOS Y EXTRANJEROS
+# GRAFICO DE COMPARACION DE INGRESOS TOTALES INDIVIDUALES ENTRE ARGENTINOS Y EXTRANJEROS
 
 datos_filtrados <- datos_ingresos %>% filter(P47T > 0 & P47T < limite_superior)
 limite_superior <- quantile(datos_ingresos$P47T, 0.99, na.rm = TRUE)
 
-estadisticas <- datos_combinados %>% 
+estadisticas <- datos_combinados %>%
   group_by(origen) %>%
   summarise(
     media = mean(P47T, na.rm = TRUE),
@@ -96,7 +95,7 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
   stat_summary(fun = mean, geom = "point", shape = 20, size = 4, color = "red") +  # Media en rojo
   scale_y_continuous(labels = scales::comma_format()) +  # Formato con comas para facilitar lectura
   labs(
-	title = "Comparación de ingresos entre argentinos y extranjeros",
+	title = "Comparación de ingresos entre totales individuales argentinos y extranjeros",
 	x = "Origen",
 	y = "Ingreso total individual (P47T)"
   ) +
@@ -111,8 +110,8 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
 # GRAFICO DE OCUPACION LABORAL PARA ARGENTINOS Y EXTRANJEROS
 
 # Filtrar datos de ocupación y crear la variable de agrupación ESTADO_group
-datos_ocupacion <- datos_combinados %>% 
-  filter(ESTADO != "0") %>% 
+datos_ocupacion <- datos_combinados %>%
+  filter(ESTADO != "0") %>%
   mutate(ESTADO_group = case_when(
     ESTADO %in% c("1") ~ "Ocupado",
     ESTADO %in% c("2") ~ "Desocupado",
@@ -144,7 +143,7 @@ ggplot(datos_ocupacion_prop, aes(x = ESTADO_group, y = prop, fill = origen)) +
 ###GRAFICO PARA VISUALIZAR PROMEDIO DE EDADES POR ORIGEN
 
 # Calcular estadísticas por grupo para usar en las etiquetas
-estadisticas_paraedades <- datos_combinados %>% 
+estadisticas_paraedades <- datos_combinados %>%
   group_by(origen) %>%
   summarise(
     media = mean(CH06, na.rm = TRUE),
@@ -156,11 +155,11 @@ ggplot(datos_combinados, aes(x = origen, y = CH06, fill = origen)) +
   geom_boxplot(width = 0.5, outlier.shape = NA, alpha = 0.7) +  # Boxplot sin outliers y con ancho ajustado
   stat_summary(fun = median, geom = "point", shape = 20, size = 4, color = "red") +  # Punto rojo para la mediana
   # Agregar etiqueta de la media (en rojo)
-  geom_text(data = estadisticas_paraedades, 
+  geom_text(data = estadisticas_paraedades,
             aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
             color = "red", vjust = -1) +
   # Agregar etiqueta de la mediana (en azul)
-  geom_text(data = estadisticas_paraedades, 
+  geom_text(data = estadisticas_paraedades,
             aes(x = origen, y = mediana, label = paste0("Mediana: ", round(mediana, 0))),
             color = "blue", vjust = 1.5) +
   scale_y_continuous(breaks = seq(18, 80, 5)) +  # Eje Y con saltos de 5 años
@@ -173,11 +172,10 @@ ggplot(datos_combinados, aes(x = origen, y = CH06, fill = origen)) +
 
 #Distribucion de extranjeros por aglomerado
 
- 
-distribucion_extranjeros <- extranjeros %>% 
+distribucion_extranjeros <- extranjeros %>%
   group_by(AGLOMERADO) %>% summarise(cantidad = n())
 
-distribucion_argentinos <- argentinos %>% 
+distribucion_argentinos <- argentinos %>%
   group_by(AGLOMERADO) %>% summarise(cantidad = n())
 
 distribucion_extranjeros <- extranjeros %>%
