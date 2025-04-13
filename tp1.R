@@ -193,38 +193,6 @@ write_xlsx(distribucion_extranjeros, "distribucion_extranjeros.xlsx")
 
 
 # ///////////////////////////////////////////////
-# Grafico de barras apiladas
-ggplot(extranjeros, aes(x = CH06, fill = factor(ESTADO))) +
-  geom_bar(position = "fill") +  # "fill" hace que la altura total sea 1 (100%)
-  scale_y_reverse(labels = scales::percent_format()) +
-  scale_fill_manual(
-    values = c("0" = "yellow", "1" = "#11239f", "2" = "#e56a3c", "3" = "#680277"),
-    name = "ESTADO",
-    labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
-  ) +
-  labs(
-    title = "Distribución porcentual del ESTADO por edad (CH06)",
-    x = "Edad",
-    y = "Porcentaje de personas"
-  ) +
-  theme_minimal()
-
-ggplot(argentinos, aes(x = CH06, fill = factor(ESTADO))) +
-  geom_bar(position = "fill") +  # fill hace el apilado proporcional
-  scale_y_reverse(labels = scales::percent_format()) +  # Invierte eje Y
-  scale_fill_manual(
-    values = c("0" = "yellow", "1" = "#11239f", "2" = "#e56a3c", "3" = "#680277"),
-    name = "ESTADO",
-    labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
-  ) +
-  labs(
-    title = "Distribución porcentual del ESTADO por edad (CH06)",
-    x = "Edad",
-    y = "Porcentaje de personas (invertido)"
-  ) +
-  theme_minimal()
-
-
 # Graficos de barras apiladas Edad vs Estado
 # Argentinos
 ggplot(argentinos, aes(x = CH06, fill = factor(ESTADO))) +
