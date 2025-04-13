@@ -205,7 +205,7 @@ ggplot(argentinos, aes(x = CH06, fill = factor(ESTADO))) +
     labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
   ) +
   labs(
-    title = "Distribución porcentual del ESTADO por edad (CH06)",
+    title = "Distribución porcentual del ESTADO por edad (CH06) en Argentinos",
     x = "Edad",
     y = "Porcentaje de personas (invertido)"
   ) +
@@ -222,8 +222,45 @@ ggplot(extranjeros, aes(x = CH06, fill = factor(ESTADO))) +
     labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
   ) +
   labs(
-    title = "Distribución porcentual del ESTADO por edad (CH06)",
+    title = "Distribución porcentual del ESTADO por edad (CH06) en Extranjeros",
     x = "Edad",
     y = "Porcentaje de personas (invertido)"
   ) +
   theme_minimal()
+
+# Grafico de sectores
+df_origen <- datos_combinados %>%
+  filter(!is.na(origen)) %>%
+  group_by(origen) %>%
+  summarise(cantidad = n())
+
+
+df_origen <- datos_combinados %>%
+  filter(!is.na(origen)) %>%
+  group_by(origen) %>%
+  summarise(cantidad = n()) %>%
+  mutate(
+    porcentaje = cantidad / sum(cantidad),
+    etiqueta = paste0(round(porcentaje * 100, 1), "%")
+  )
+
+
+ggplot(df_origen, aes(x = "", y = cantidad, fill = origen)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y") +
+  geom_text(aes(label = etiqueta), 
+            position = position_stack(vjust = 0.5), 
+            color = "white", size = 5) +
+  scale_fill_manual(
+    values = c("Argentinos" = "#128dfe", "Extranjeros" = "#11239f")
+  ) +
+  labs(
+    title = "Distribución de personas por origen",
+    x = NULL,
+    y = NULL,
+    fill = "Origen"
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
