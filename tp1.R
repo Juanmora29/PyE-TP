@@ -165,9 +165,10 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
   ) +
   # Agregar texto con las estadísticas
   geom_text(data = ingresos_media_mediana, aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
-            color = "darkred", vjust = -1.5) + # Anotar media
+            color = "darkred", vjust = -0.7, hjust = 0.2) + # Anotar media
   geom_text(data = ingresos_media_mediana, aes(x = origen, y = mediana, label = paste0("Mediana: ", round(mediana, 0))),
-            color = "darkblue", vjust = 0) + # Anotar mediana
+            color = "darkblue", vjust = 5, hjust = 0.2) + # Anotar mediana
+  coord_flip() +
   theme_minimal()
 
 
@@ -260,8 +261,7 @@ ggplot(datos_combinados_entre_18y65, aes(x = origen, y = CH06, fill = origen)) +
        x = "Origen",
        y = "Edad (años)",
        fill = "Origen") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme_minimal()
 
 #Distribucion de extranjeros por aglomerado
 
