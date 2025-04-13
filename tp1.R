@@ -241,7 +241,7 @@ df_origen <- datos_combinados %>%
   summarise(cantidad = n()) %>%
   mutate(
     porcentaje = cantidad / sum(cantidad),
-    etiqueta = paste0(round(porcentaje * 100, 1), "%")
+    etiqueta = paste0(round(porcentaje * 100, 2), "%")
   )
 
 
