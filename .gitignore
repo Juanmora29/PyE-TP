@@ -2,3 +2,7 @@
 *.jpeg
 /.RData
 /.Rhistory
+*.Rproj.user
+*.Rproj
+*.png
+
