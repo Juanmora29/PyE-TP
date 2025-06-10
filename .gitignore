@@ -2,4 +2,11 @@
 *.jpeg
 /.RData
 /.Rhistory
+<<<<<<< HEAD
 *.pdf
+=======
+*.Rproj.user
+*.Rproj
+*.png
+
+>>>>>>> origin/Fefe
