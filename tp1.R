@@ -6,12 +6,10 @@ library(eph)
 library(tidyverse)
 library(ggplot2)
 library(scales)
-<<<<<<< HEAD
-=======
+
 library(dplyr)
 library(DescTools)
 library(nortest)
->>>>>>> origin/Fefe
 
 # Descargar los microdatos del primer trimestre de 2024
 datos <- get_microdata(year = 2024, trimester = 1, type = "individual")
@@ -21,10 +19,7 @@ datos <- get_microdata(year = 2024, trimester = 1, type = "individual")
 # -------------------------------------------------------------------
 datos_edad_entre_18y65 <- datos %>%
   filter(CH06 >= 18 & CH06 <= 65) %>%
-<<<<<<< HEAD
-=======
   select(CH06, CH15, P47T, NIVEL_ED, ESTADO)
->>>>>>> origin/Fefe
 
 # -------------------------------------------------------------------
 # Creamos un subconjuntos para argentinos y extranjeros
@@ -129,7 +124,6 @@ ggplot(datos_prop, aes(x = NIVEL_ED_group, y = prop, fill = origen)) +
   theme_minimal()
 
 # GRAFICO DE COMPARACION DE INGRESOS TOTALES INDIVIDUALES ENTRE ARGENTINOS Y EXTRANJEROS
-=======
 # GRÁFICO N°1: Estado de actividad de las personas nacidas en Argentina
 ggplot(argentinos_entre_18y65, aes(x = CH06, fill = factor(ESTADO))) +
   geom_bar(position = "fill") +
@@ -343,19 +337,18 @@ datos_combinados_entre_18y65 <- datos_combinados_entre_18y65 %>%
     TRUE ~ "Otro"
   ))
 
-<<<<<<< HEAD
+
 # Calcular estadísticas por grupo para usar en las etiquetas
 estadisticas_paraedades <- datos_combinados %>%
-=======
+
 # Calcular las proporciones
 datos_prop_educacion_origen <- datos_combinados_entre_18y65 %>%
   group_by(origen, NIVEL_ED_group) %>%
   summarise(n = n(), .groups = "drop") %>%
->>>>>>> origin/Fefe
   group_by(origen) %>%
   mutate(prop = n / sum(n))
 
-<<<<<<< HEAD
+
 # Gráfico de boxplot de la edad (CH06) por origen con anotaciones
 ggplot(datos_combinados, aes(x = origen, y = CH06, fill = origen)) +
   geom_boxplot(width = 0.5, outlier.shape = NA, alpha = 0.7) +  # Boxplot sin outliers y con ancho ajustado
@@ -385,7 +378,7 @@ distribucion_argentinos <- argentinos %>%
   group_by(AGLOMERADO) %>% summarise(cantidad = n())
 
 distribucion_extranjeros <- extranjeros %>%
-=======
+
 # Gráfico con etiquetas sobre las barras
 ggplot(datos_prop_educacion_origen, aes(x = NIVEL_ED_group, y = prop, fill = origen)) +
   geom_bar(stat = "identity", position = "dodge") +

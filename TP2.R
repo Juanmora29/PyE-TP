@@ -36,6 +36,9 @@ extranjeros_entre_18y65 <- datos_edad_entre_18y65 %>%
 # Combinar ambos subconjuntos
 datos_combinados_entre_18y65 <- bind_rows(argentinos_entre_18y65, extranjeros_entre_18y65)
 
+# ---------------------------------------------------------------------------------------------------------------------------------
+# Plantear intervalo de confianza de la media del ingreso total individual tanto de argentinos y extranjeros
+# ---------------------------------------------------------------------------------------------------------------------------------
 
 #Vamos a tomar los datos de ingresos sin filtrar por limite superior
 ingresos_argentinos <- (argentinos_entre_18y65 %>% filter(P47T >= 0))$P47T
@@ -77,15 +80,16 @@ ad.test(ingresos_extranjeros)
 MeanCI(x = ingresos_argentinos, conf.level = 0.95)
 MeanCI(x = ingresos_extranjeros, conf.level = 0.95)
 
-# Los intervalos se superponen con lo cual no podemos concluir que alguno de los promedios es mayor que el otro con una confianza del 95%
+# Conclusion:  
+# Con un nivel de confianza del 95%, como los intervalos se superponen, no podemos concluir que alguno de los promedios poblacionales es mayor que el otro.
 
 
-# --------------
-
+# ---------------------------------------------------------------------------------------------------------------------------------
 # Plantear intervalo de confianza de la media de la edad tanto de argentinos y extranjeros para ver si se solapan los intervalos
+# ---------------------------------------------------------------------------------------------------------------------------------
 
-# ----------
-
+summary(argentinos_entre_18y65$CH06)
+summary(extranjeros_entre_18y65$CH06)
 
 # Función para crear QQ plots
 create_qqplot <- function(data, group_name) {
@@ -112,11 +116,76 @@ print(combined_plot)
 ad.test(argentinos_entre_18y65$CH06)
 ad.test(extranjeros_entre_18y65$CH06)
 
+# ambas muestras no pasan el test de normalidad, solo nos queda asumir que n es lo suficientemente grande
 # Intervalos de confianza (tu código original está bien)
 MeanCI(argentinos_entre_18y65$CH06, conf.level = 0.95)
 MeanCI(extranjeros_entre_18y65$CH06, conf.level = 0.95)
 
-#Con un nivel del 95% de confianza podemos concluir que la media de edad de los extranjeros se encuentra por encima de la media de la edad de los argentinosmer
+# Conclusion: 
+# Con un nivel del 95% de confianza podemos concluir que la media poblacional de edad de los extranjeros se encuentra por encima de la media poblacional de la edad de los argentinos
 
+# ---------------------------------------------------------------------------------------------------------------------------------
+# Plantear intervalo de confianza para la proporcion poblacional de argentinos ocupados y extranjeros ocupados
+# ---------------------------------------------------------------------------------------------------------------------------------
+
+argentinos_estado <- (argentinos_entre_18y65 %>% filter(ESTADO %in% c("1", "2", "3")))$ESTADO
+argentinos_ocupados <- (argentinos_entre_18y65 %>% filter(ESTADO %in% c("1")))$ESTADO
+
+n = length(argentinos_estado)
+p = length(argentinos_ocupados)/n
+
+# Podemos aplicar la aproximacion normal?
+n*p>=5 & n*(1-p)>=5
+
+# Podemos usar los intervalos aproximados a normal
+BinomCI(x = length(argentinos_ocupados), n = length(argentinos_estado), conf.level = 0.95, method = "wald")
+
+
+extranjeros_estado <- (extranjeros_entre_18y65 %>% filter(ESTADO %in% c("1", "2", "3")))$ESTADO
+extranjeros_ocupados <- (extranjeros_entre_18y65 %>% filter(ESTADO %in% c("1")))$ESTADO
+
+n = length(extranjeros_estado)
+p = length(extranjeros_ocupados)/n
+
+# Podemos aplicar la aproximacion normal?
+n*p>=5 & n*(1-p)>=5
+
+# Podemos usar los intervalos aproximados a normal
+BinomCI(x = length(extranjeros_ocupados), n = length(extranjeros_estado), conf.level = 0.95, method = "wald")
+
+# Conclusion:  
+# Con un nivel de confianza del 95%, como los intervalos se superponen, no podemos concluir que alguna de las proporciones poblacionales es mayor que el otra.
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+# Plantear intervalo de confianza para la proporcion poblacional de argentinos con educacion media y extranjeros con educacion media
+# ---------------------------------------------------------------------------------------------------------------------------------
+
+argentinos_educacion <- (argentinos_entre_18y65)$NIVEL_ED
+argentinos_educacion_media <- (argentinos_entre_18y65 %>% filter(NIVEL_ED %in% c("4", "5")))$NIVEL_ED
+
+n = length(argentinos_educacion)
+p = length(argentinos_educacion_media)/n
+
+# Podemos aplicar la aproximacion normal?
+n*p>=5 & n*(1-p)>=5
+
+# Podemos usar los intervalos aproximados a normal
+BinomCI(x = length(argentinos_educacion_media), n = length(argentinos_educacion), conf.level = 0.95, method = "wald")
+
+extranjeros_educacion <- (extranjeros_entre_18y65)$NIVEL_ED
+extranjeros_educacion_media <- (extranjeros_entre_18y65 %>% filter(NIVEL_ED %in% c("4", "5")))$NIVEL_ED
+
+n = length(extranjeros_educacion)
+p = length(extranjeros_educacion_media)/n
+
+# Podemos aplicar la aproximacion normal?
+n*p>=5 & n*(1-p)>=5
+
+# Podemos usar los intervalos aproximados a normal
+BinomCI(x = length(extranjeros_educacion_media), n = length(extranjeros_educacion), conf.level = 0.95, method = "wald")
+
+# Conclusion:  
+# Con un nivel de confianza del 95%, podemos concluir que la proporcion poblacional de argentinos con educacion media es superior a la proporcion extranjera.
 
 
