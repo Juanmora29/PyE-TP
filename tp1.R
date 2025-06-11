@@ -6,7 +6,6 @@ library(eph)
 library(tidyverse)
 library(ggplot2)
 library(scales)
-
 library(dplyr)
 library(DescTools)
 library(nortest)
@@ -82,48 +81,6 @@ datos_ocupacion <- datos_combinados_entre_18y65 %>%
     TRUE ~ "Otro"
   ))
 
-<<<<<<< HEAD
-# Filtrar ingresos válidos
-datos_ingresos <- datos_combinados %>% filter(P47T >= 0)
-
-resumen <- datos_ingresos %>%
-  group_by(origen, NIVEL_ED_group) %>%
-  summarise(
-	mediana = median(P47T, na.rm = TRUE),
-	media = mean(P47T, na.rm = TRUE),
-	sd = sd(P47T, na.rm = TRUE),
-	IQR = IQR(P47T, na.rm = TRUE),
-	min = min(P47T, na.rm = TRUE),
-	max = max(P47T, na.rm = TRUE),
-	CV = (sd / media) * 100,
-	n = n(),
-	.groups = "drop"
-  )
-
-### GRAFICO DE DISTRIBUCION RELATIVA DEL NIVEL DE EDUCACION POR ORIGEN
-
-# Calcular las proporciones antes de graficar
-datos_prop <- datos_combinados %>%
-  group_by(origen, NIVEL_ED_group) %>%
-  summarise(n = n(), .groups = "drop") %>%
-  group_by(origen) %>%
-  mutate(prop = n / sum(n))
-
-# Crear el gráfico con etiquetas sobre las barras
-ggplot(datos_prop, aes(x = NIVEL_ED_group, y = prop, fill = origen)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  geom_text(aes(label = scales::percent(prop, accuracy = 0.1)),
-            position = position_dodge(width = 0.9), vjust = -0.5, size = 4) +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(
-    title = "Distribución relativa del nivel de educación por origen",
-    x = "Nivel Educativo (agrupado)",
-    y = "Proporción dentro de cada grupo (%)",
-    fill = "Origen"
-  ) +
-  theme_minimal()
-
-# GRAFICO DE COMPARACION DE INGRESOS TOTALES INDIVIDUALES ENTRE ARGENTINOS Y EXTRANJEROS
 # GRÁFICO N°1: Estado de actividad de las personas nacidas en Argentina
 ggplot(argentinos_entre_18y65, aes(x = CH06, fill = factor(ESTADO))) +
   geom_bar(position = "fill") +
@@ -167,16 +124,11 @@ ggplot(extranjeros_entre_18y65, aes(x = CH06, fill = factor(ESTADO))) +
 # GRÁFICO N° 3: Comparación de ingresos entre argentinos y extranjeros residentes
 # Filtrar ingresos válidos
 datos_ingresos <- datos_combinados_entre_18y65 %>% filter(P47T >= 0)
->>>>>>> origin/Fefe
 
 limite_superior <- quantile(datos_ingresos$P47T, 0.99, na.rm = TRUE)
 datos_filtrados <- datos_ingresos %>% filter(P47T >= 0 & P47T < limite_superior)
 
-<<<<<<< HEAD
-estadisticas <- datos_combinados %>%
-=======
 ingresos_media_mediana <- datos_filtrados %>%
->>>>>>> origin/Fefe
   group_by(origen) %>%
   summarise(
     media = mean(P47T, na.rm = TRUE),
@@ -188,13 +140,9 @@ ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
   stat_summary(fun = mean, geom = "point", shape = 20, size = 4, color = "darkred") +  # Media en rojo
   scale_y_continuous(labels = scales::comma_format()) +  # Formato con comas para facilitar lectura
   labs(
-<<<<<<< HEAD
-	title = "Comparación de ingresos entre totales individuales argentinos y extranjeros",
-=======
-	title = "Comparación de ingresos totales individuales entre argentinos y extranjeros",
->>>>>>> origin/Fefe
-	x = "Origen",
-	y = "Ingreso total individual (P47T)"
+    title = "Comparación de ingresos totales individuales entre argentinos y extranjeros",
+    x = "Origen",
+    y = "Ingreso total individual (P47T)"
   ) +
   # Agregar texto con las estadísticas
   geom_text(data = ingresos_media_mediana, aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
@@ -258,23 +206,11 @@ extranjeros_entre_18y65 %>%
 ad.test(ingresos_argentinos)
 ad.test(ingresos_extranjeros)
 
-<<<<<<< HEAD
-# Filtrar datos de ocupación y crear la variable de agrupación ESTADO_group
-datos_ocupacion <- datos_combinados %>%
-  filter(ESTADO != "0") %>%
-  mutate(ESTADO_group = case_when(
-    ESTADO %in% c("1") ~ "Ocupado",
-    ESTADO %in% c("2") ~ "Desocupado",
-    ESTADO %in% c("3") ~ "Inactivo",
-    TRUE ~ "Otro"
-  ))
-=======
 # ambas muestras no pasan el test de normalidad, solo nos queda asumir que n es lo suficientemente grande
 MeanCI(x = ingresos_argentinos, conf.level = 0.95)
 MeanCI(x = ingresos_extranjeros, conf.level = 0.95)
->>>>>>> origin/Fefe
 
-Los intervalos se superponen con lo cual no podemos concluir que alguno de los promedios es mayor que el otro con una confianza del 95%
+# Los intervalos se superponen con lo cual no podemos concluir que alguno de los promedios es mayor que el otro con una confianza del 95%
 
 
 # GRÁFICO N° 4: Comparación de edad entre argentinos y extranjeros residentes.
@@ -337,47 +273,12 @@ datos_combinados_entre_18y65 <- datos_combinados_entre_18y65 %>%
     TRUE ~ "Otro"
   ))
 
-
-# Calcular estadísticas por grupo para usar en las etiquetas
-estadisticas_paraedades <- datos_combinados %>%
-
 # Calcular las proporciones
 datos_prop_educacion_origen <- datos_combinados_entre_18y65 %>%
   group_by(origen, NIVEL_ED_group) %>%
   summarise(n = n(), .groups = "drop") %>%
   group_by(origen) %>%
   mutate(prop = n / sum(n))
-
-
-# Gráfico de boxplot de la edad (CH06) por origen con anotaciones
-ggplot(datos_combinados, aes(x = origen, y = CH06, fill = origen)) +
-  geom_boxplot(width = 0.5, outlier.shape = NA, alpha = 0.7) +  # Boxplot sin outliers y con ancho ajustado
-  stat_summary(fun = median, geom = "point", shape = 20, size = 4, color = "red") +  # Punto rojo para la mediana
-  # Agregar etiqueta de la media (en rojo)
-  geom_text(data = estadisticas_paraedades,
-            aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
-            color = "red", vjust = -1) +
-  # Agregar etiqueta de la mediana (en azul)
-  geom_text(data = estadisticas_paraedades,
-            aes(x = origen, y = mediana, label = paste0("Mediana: ", round(mediana, 0))),
-            color = "blue", vjust = 1.5) +
-  scale_y_continuous(breaks = seq(18, 80, 5)) +  # Eje Y con saltos de 5 años
-  labs(title = "Comparación de Edad entre Argentinos y Extranjeros",
-       x = "Origen",
-       y = "Edad (años)",
-       fill = "Origen") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-#Distribucion de extranjeros por aglomerado
-
-distribucion_extranjeros <- extranjeros %>%
-  group_by(AGLOMERADO) %>% summarise(cantidad = n())
-
-distribucion_argentinos <- argentinos %>%
-  group_by(AGLOMERADO) %>% summarise(cantidad = n())
-
-distribucion_extranjeros <- extranjeros %>%
 
 # Gráfico con etiquetas sobre las barras
 ggplot(datos_prop_educacion_origen, aes(x = NIVEL_ED_group, y = prop, fill = origen)) +
@@ -398,7 +299,6 @@ ggplot(datos_prop_educacion_origen, aes(x = NIVEL_ED_group, y = prop, fill = ori
 datos_proporcion <- datos_combinados_entre_18y65 %>%
   group_by(AGLOMERADO, origen) %>%
   summarise(cantidad = n(), .groups = "drop") %>%
->>>>>>> origin/Fefe
   group_by(AGLOMERADO) %>%
   mutate(proporcion = cantidad / sum(cantidad))
 
