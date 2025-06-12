@@ -48,35 +48,33 @@ summary(ingresos_extranjeros)
 
 #histograma
 hist(ingresos_argentinos,
-     main = "Histograma de P47T",
+     main = "Histograma de Ingresos Argentinos",
      xlab = "Ingreso (P47T)",
      ylab = "Frecuencia",
      col = "skyblue",
      breaks = 100)
 
-# Transformación logarítmica para mejorar la visualizacion
-argentinos_entre_18y65 %>%
-  filter(P47T > 0) %>%  # evitar log(0)
-  ggplot(aes(x = log(P47T))) +
-  geom_histogram(binwidth = 0.2, fill = "steelblue", color = "white") +
-  labs(title = "Histograma log(P47T)",
-       x = "Logaritmo del ingreso",
-       y = "Frecuencia") +
-  theme_minimal()
+hist(ingresos_argentinos[ingresos_argentinos >=0 & ingresos_argentinos <= 1000000],
+     main = "Histograma de Ingresos Argentinos hasta $1.000.000",
+     xlab = "Ingreso (P47T)",
+     ylab = "Frecuencia",
+     col = "skyblue",
+     breaks = 15)
+
 
 # qq-plot
-qqnorm((argentinos_entre_18y65 %>% filter(P47T > 0))$P47T)
-qqline((argentinos_entre_18y65 %>% filter(P47T > 0))$P47T, col = "red")
+qqnorm(ingresos_argentinos, main = "QQ Plot de Ingresos Argentinos")
+qqline(ingresos_argentinos, col = "red")
 
-# Como los ingresos suelen estar sesgados, lo mejor es hacer el Q-Q plot sobre el logaritmo:
-qqnorm(log((argentinos_entre_18y65 %>% filter(P47T > 0))$P47T))
-qqline(log((argentinos_entre_18y65 %>% filter(P47T > 0))$P47T), col = "blue")
+# qq-plot
+qqnorm(ingresos_extranjeros, main = "QQ Plot de Ingresos Extranjeros")
+qqline(ingresos_extranjeros, col = "red")
 
 # Aplicar el test de Anderson-Darling
 ad.test(ingresos_argentinos)
 ad.test(ingresos_extranjeros)
 
-# ambas muestras no pasan el test de normalidad, solo nos queda asumir que n es lo suficientemente grande
+# ambas muestras no pasan el test de normalidad, solo nos queda asumir que n es lo suficientemente grande y aplicar el TCL
 MeanCI(x = ingresos_argentinos, conf.level = 0.95)
 MeanCI(x = ingresos_extranjeros, conf.level = 0.95)
 
@@ -90,6 +88,24 @@ MeanCI(x = ingresos_extranjeros, conf.level = 0.95)
 
 summary(argentinos_entre_18y65$CH06)
 summary(extranjeros_entre_18y65$CH06)
+length(argentinos_entre_18y65$CH06)
+length(extranjeros_entre_18y65$CH06)
+
+#histograma
+hist(argentinos_entre_18y65$CH06,
+     main = "Histograma de Edad Argentinos",
+     xlab = "Edad (CH06)",
+     ylab = "Frecuencia",
+     col = "skyblue",
+     breaks = 10)
+
+#histograma
+hist(extranjeros_entre_18y65$CH06,
+     main = "Histograma de Edad Extranjeros",
+     xlab = "Edad (CH06)",
+     ylab = "Frecuencia",
+     col = "skyblue",
+     breaks = 10)
 
 # Función para crear QQ plots
 create_qqplot <- function(data, group_name) {
@@ -140,7 +156,6 @@ n*p>=5 & n*(1-p)>=5
 # Podemos usar los intervalos aproximados a normal
 BinomCI(x = length(argentinos_ocupados), n = length(argentinos_estado), conf.level = 0.95, method = "wald")
 
-
 extranjeros_estado <- (extranjeros_entre_18y65 %>% filter(ESTADO %in% c("1", "2", "3")))$ESTADO
 extranjeros_ocupados <- (extranjeros_entre_18y65 %>% filter(ESTADO %in% c("1")))$ESTADO
 
@@ -171,7 +186,7 @@ p = length(argentinos_educacion_media)/n
 n*p>=5 & n*(1-p)>=5
 
 # Podemos usar los intervalos aproximados a normal
-BinomCI(x = length(argentinos_educacion_media), n = length(argentinos_educacion), conf.level = 0.95, method = "wald")
+BinomCI(x = length(argentinos_educacion_media), n = length(argentinos_educacion), conf.level = 0.95, method = "wald") %>% round(5)
 
 extranjeros_educacion <- (extranjeros_entre_18y65)$NIVEL_ED
 extranjeros_educacion_media <- (extranjeros_entre_18y65 %>% filter(NIVEL_ED %in% c("4", "5")))$NIVEL_ED
@@ -183,7 +198,7 @@ p = length(extranjeros_educacion_media)/n
 n*p>=5 & n*(1-p)>=5
 
 # Podemos usar los intervalos aproximados a normal
-BinomCI(x = length(extranjeros_educacion_media), n = length(extranjeros_educacion), conf.level = 0.95, method = "wald")
+BinomCI(x = length(extranjeros_educacion_media), n = length(extranjeros_educacion), conf.level = 0.95, method = "wald") %>% round(5)
 
 # Conclusion:  
 # Con un nivel de confianza del 95%, podemos concluir que la proporcion poblacional de argentinos con educacion media es superior a la proporcion extranjera.
