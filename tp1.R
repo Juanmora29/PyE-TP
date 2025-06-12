@@ -81,45 +81,93 @@ datos_ocupacion <- datos_combinados_entre_18y65 %>%
     TRUE ~ "Otro"
   ))
 
-# GRÁFICO N°1: Estado de actividad de las personas nacidas en Argentina
-ggplot(argentinos_entre_18y65, aes(x = CH06, fill = factor(ESTADO))) +
+# # GRÁFICO N°1: Estado de actividad de las personas nacidas en Argentina
+# ggplot(argentinos_entre_18y65, aes(x = CH06, fill = factor(ESTADO))) +
+#   geom_bar(position = "fill") +
+#   scale_y_reverse(labels = scales::percent_format()) +
+#   scale_x_continuous(
+#     breaks = seq(18, 65, 2),  # Mostrar cada 2 años
+#     name = "Edad"
+#   ) +
+#   scale_fill_manual(
+#     values = c("0" = "#128dfe", "1" = "#11239f", "2" = "#e56a3c", "3" = "#680277"),
+#     name = "ESTADO",
+#     labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
+#   ) +
+#   labs(
+#     title = "Distribución porcentual del ESTADO por edad (CH06) entre Argentinos residentes",
+#     x = "Edad",
+#     y = "Porcentaje de personas (invertido)"
+#   ) +
+#   theme_minimal()
+
+# # GRÁFICO N° 2: Estado de actividad de las personas nacidas en el Extranjero
+# ggplot(extranjeros_entre_18y65, aes(x = CH06, fill = factor(ESTADO))) +
+#   geom_bar(position = "fill") +
+#   scale_y_reverse(labels = scales::percent_format()) +
+#   scale_x_continuous(
+#     breaks = seq(18, 65, 2),  # Mostrar cada 2 años
+#     name = "Edad"
+#   ) +
+#   scale_fill_manual(
+#     values = c("0" = "#128dfe", "1" = "#11239f", "2" = "#e56a3c", "3" = "#680277"),
+#     name = "ESTADO",
+#     labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
+#   ) +
+#   labs(
+#     title = "Distribución porcentual del ESTADO por edad (CH06) entre Extranjeros residentes",
+#     x = "Edad",
+#     y = "Porcentaje de personas (invertido)"
+#   ) +
+#   theme_minimal()
+
+### MODIFICACION GRÁFICOS 1 y 2 ###
+# Crear variable de rango de edad en intervalos de 6 años
+argentinos_entre_18y65$edad_rango <- cut(
+  argentinos_entre_18y65$CH06,
+  breaks = seq(18, 66, 6),
+  labels = c("[18,24)", "[24,30)", "[30,36)", "[36,42)", "[42,48)", "[48,54)", "[54,60)", "[60,66)"),
+  right = FALSE
+)
+
+extranjeros_entre_18y65$edad_rango <- cut(
+  extranjeros_entre_18y65$CH06,
+  breaks = seq(18, 66, 6),
+  labels = c("[18,24)", "[24,30)", "[30,36)", "[36,42)", "[42,48)", "[48,54)", "[54,60)", "[60,66)"),
+  right = FALSE
+)
+
+
+ggplot(argentinos_entre_18y65, aes(x = edad_rango, fill = factor(ESTADO))) +
   geom_bar(position = "fill") +
   scale_y_reverse(labels = scales::percent_format()) +
-  scale_x_continuous(
-    breaks = seq(18, 65, 2),  # Mostrar cada 2 años
-    name = "Edad"
-  ) +
   scale_fill_manual(
     values = c("0" = "#128dfe", "1" = "#11239f", "2" = "#e56a3c", "3" = "#680277"),
     name = "ESTADO",
     labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
   ) +
   labs(
-    title = "Distribución porcentual del ESTADO por edad (CH06) entre Argentinos residentes",
-    x = "Edad",
+    title = "Distribución porcentual del ESTADO por rango de edad (CH06) entre Argentinos residentes",
+    x = "Rango de Edad",
     y = "Porcentaje de personas (invertido)"
   ) +
   theme_minimal()
 
-# GRÁFICO N° 2: Estado de actividad de las personas nacidas en el Extranjero
-ggplot(extranjeros_entre_18y65, aes(x = CH06, fill = factor(ESTADO))) +
+ggplot(extranjeros_entre_18y65, aes(x = edad_rango, fill = factor(ESTADO))) +
   geom_bar(position = "fill") +
   scale_y_reverse(labels = scales::percent_format()) +
-  scale_x_continuous(
-    breaks = seq(18, 65, 2),  # Mostrar cada 2 años
-    name = "Edad"
-  ) +
   scale_fill_manual(
     values = c("0" = "#128dfe", "1" = "#11239f", "2" = "#e56a3c", "3" = "#680277"),
     name = "ESTADO",
     labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
   ) +
   labs(
-    title = "Distribución porcentual del ESTADO por edad (CH06) entre Extranjeros residentes",
-    x = "Edad",
+    title = "Distribución porcentual del ESTADO por rango de edad (CH06) entre Extranjeros residentes",
+    x = "Rango de Edad",
     y = "Porcentaje de personas (invertido)"
   ) +
   theme_minimal()
+
 
 # GRÁFICO N° 3: Comparación de ingresos entre argentinos y extranjeros residentes
 # Filtrar ingresos válidos
