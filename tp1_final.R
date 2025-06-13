@@ -81,45 +81,7 @@ datos_ocupacion <- datos_combinados_entre_18y65 %>%
     TRUE ~ "Otro"
   ))
 
-# # GRÁFICO N°1: Estado de actividad de las personas nacidas en Argentina
-# ggplot(argentinos_entre_18y65, aes(x = CH06, fill = factor(ESTADO))) +
-#   geom_bar(position = "fill") +
-#   scale_y_reverse(labels = scales::percent_format()) +
-#   scale_x_continuous(
-#     breaks = seq(18, 65, 2),  # Mostrar cada 2 años
-#     name = "Edad"
-#   ) +
-#   scale_fill_manual(
-#     values = c("0" = "#128dfe", "1" = "#11239f", "2" = "#e56a3c", "3" = "#680277"),
-#     name = "ESTADO",
-#     labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
-#   ) +
-#   labs(
-#     title = "Distribución porcentual del ESTADO por edad (CH06) entre Argentinos residentes",
-#     x = "Edad",
-#     y = "Porcentaje de personas (invertido)"
-#   ) +
-#   theme_minimal()
 
-# # GRÁFICO N° 2: Estado de actividad de las personas nacidas en el Extranjero
-# ggplot(extranjeros_entre_18y65, aes(x = CH06, fill = factor(ESTADO))) +
-#   geom_bar(position = "fill") +
-#   scale_y_reverse(labels = scales::percent_format()) +
-#   scale_x_continuous(
-#     breaks = seq(18, 65, 2),  # Mostrar cada 2 años
-#     name = "Edad"
-#   ) +
-#   scale_fill_manual(
-#     values = c("0" = "#128dfe", "1" = "#11239f", "2" = "#e56a3c", "3" = "#680277"),
-#     name = "ESTADO",
-#     labels = c("0: No contesta", "1: Ocupado", "2: Desocupado", "3: Inactivo")
-#   ) +
-#   labs(
-#     title = "Distribución porcentual del ESTADO por edad (CH06) entre Extranjeros residentes",
-#     x = "Edad",
-#     y = "Porcentaje de personas (invertido)"
-#   ) +
-#   theme_minimal()
 
 ### MODIFICACION GRÁFICOS 1 y 2 ###
 # Crear variable de rango de edad en intervalos de 6 años
@@ -169,43 +131,13 @@ ggplot(extranjeros_entre_18y65, aes(x = edad_rango, fill = factor(ESTADO))) +
   theme_minimal()
 
 
-# GRÁFICO N° 3: Comparación de ingresos entre argentinos y extranjeros residentes
-# Filtrar ingresos válidos
-# datos_ingresos <- datos_combinados_entre_18y65 %>% filter(P47T >= 0)
 
-# limite_superior <- quantile(datos_ingresos$P47T, 0.99, na.rm = TRUE)
-# datos_filtrados <- datos_ingresos %>% filter(P47T >= 0 & P47T < limite_superior)
-
-# ingresos_media_mediana <- datos_ingresos %>%
-#   group_by(origen) %>%
-#   summarise(
-#     media = mean(P47T, na.rm = TRUE),
-#     mediana = median(P47T, na.rm = TRUE)
-#   )
-
-# ggplot(datos_filtrados, aes(x = origen, y = P47T, fill = origen)) +
-#   geom_boxplot(alpha = 0.7) +
-#   stat_summary(fun = mean, geom = "point", shape = 20, size = 4, color = "darkred") +  # Media en rojo
-#   scale_y_continuous(labels = scales::comma_format()) +  # Formato con comas para facilitar lectura
-#   labs(
-#     title = "Comparación de ingresos totales individuales entre argentinos y extranjeros",
-#     x = "Origen",
-#     y = "Ingreso total individual (P47T)"
-#   ) +
-#   # Agregar texto con las estadísticas
-#   geom_text(data = ingresos_media_mediana, aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
-#             color = "darkred", vjust = -0.7, hjust = 0.1) + # Anotar media
-#   geom_text(data = ingresos_media_mediana, aes(x = origen, y = mediana, label = paste0("Mediana: ", round(mediana, 0))),
-#             color = "darkblue", vjust = 8, hjust = 0.1) + # Anotar mediana
-#   coord_flip() +
-#   theme_minimal()+
-#   theme(legend.position = "none")
 
 # BOXPLOTS SEPARADOS DE INGRESOS DE ARGENTINOS Y EXTRANJEROS
 # BOXPLOT INGRESOS ARGENTINOS
 ingresos_argentinos <- (argentinos_entre_18y65 %>% filter(P47T >= 0))
-limite_arg <- quantile(ingresos_argentinos$P47T, 0.99, na.rm = TRUE)
-datos_argentinos_99 <- ingresos_argentinos %>% filter(P47T < limite_arg)
+#limite_arg <- quantile(ingresos_argentinos$P47T, 0.99, na.rm = TRUE)
+#datos_argentinos_99 <- ingresos_argentinos %>% filter(P47T < limite_arg)
 
 # Calculo media y mediana
 ingresos_media_mediana_arg <- ingresos_argentinos %>%
@@ -215,7 +147,7 @@ ingresos_media_mediana_arg <- ingresos_argentinos %>%
     mediana = median(P47T, na.rm = TRUE)
   )
 
-ggplot(datos_argentinos_99, aes(x = origen, y = P47T, fill = origen)) +
+ggplot(ingresos_argentinos, aes(x = origen, y = P47T, fill = origen)) +
   geom_boxplot(alpha = 0.7) +
   stat_summary(fun = mean, geom = "point", shape = 20, size = 4, color = "darkred") +
   scale_y_continuous(labels = scales::comma_format()) +
@@ -225,19 +157,19 @@ ggplot(datos_argentinos_99, aes(x = origen, y = P47T, fill = origen)) +
     y = "Ingreso total individual (P47T)"
   ) +
   geom_text(data = ingresos_media_mediana_arg,
-            aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
-            color = "darkred", vjust = -0.7, hjust = 0.5) +
+            aes(x = origen, y = media, label = paste0("Media: ", scales::comma(round(media, 0)))),
+            color = "darkred", vjust = -0.5, hjust = 0.05) +
   geom_text(data = ingresos_media_mediana_arg,
-            aes(x = origen, y = mediana, label = paste0("Mediana: ", round(mediana, 0))),
-            color = "darkblue", vjust = 8, hjust = 0.5) +
-  coord_flip() +
+            aes(x = origen, y = mediana, label = paste0("Mediana: ", scales::comma(round(mediana, 0)))),
+            color = "darkblue", vjust = 4.9, hjust = 0.4) +
+  coord_flip(ylim = c(0, 1400000)) +  # <- ESTA es la forma correcta
   theme_minimal() +
   theme(legend.position = "none")
 
 # BOXPLOT INGRESOS EXTRANJEROS
 ingresos_extranjeros <-(extranjeros_entre_18y65 %>% filter(P47T >= 0))
-limite_ext <- quantile(ingresos_extranjeros$P47T, 0.99, na.rm = TRUE)
-datos_extranjeros_99 <- ingresos_extranjeros %>% filter(P47T < limite_ext)
+#limite_ext <- quantile(ingresos_extranjeros$P47T, 0.99, na.rm = TRUE)
+#datos_extranjeros_99 <- ingresos_extranjeros %>% filter(P47T < limite_ext)
 
 # Calculo media y mediana
 ingresos_media_mediana_ext <- ingresos_extranjeros %>%
@@ -247,7 +179,7 @@ ingresos_media_mediana_ext <- ingresos_extranjeros %>%
     mediana = median(P47T, na.rm = TRUE)
   )
 
-ggplot(datos_extranjeros_99, aes(x = origen, y = P47T, fill = origen)) +
+ggplot(ingresos_extranjeros, aes(x = origen, y = P47T, fill = origen)) +
   geom_boxplot(alpha = 0.7) +
   stat_summary(fun = mean, geom = "point", shape = 20, size = 4, color = "darkred") +
   scale_y_continuous(labels = scales::comma_format()) +
@@ -257,17 +189,19 @@ ggplot(datos_extranjeros_99, aes(x = origen, y = P47T, fill = origen)) +
     y = "Ingreso total individual (P47T)"
   ) +
   geom_text(data = ingresos_media_mediana_ext,
-            aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
-            color = "darkred", vjust = -0.7, hjust = 0.4) +
+            aes(x = origen, y = media, label = paste0("Media: ", scales::comma(round(media, 0)))),
+            color = "darkred", vjust = -0.5, hjust = 0.15) +
   geom_text(data = ingresos_media_mediana_ext,
             aes(x = origen, y = mediana, label = paste0("Mediana: ", scales::comma(round(mediana, 0)))),
-            color = "darkblue", vjust = 8, hjust = 0.5) +
-  coord_flip() +
+            #aes(x = origen, y = mediana, label = paste0("Mediana: ", mediana)),
+            color = "darkblue", vjust = 4.9, hjust = 0.4) +
+  coord_flip(ylim = c(0, 1764300)) +  # <- ESTA es la forma correcta
   theme_minimal() +
   theme(legend.position = "none")
+#######
+# GRÁFICO N° 4: Comparación de edad entre argentinos y extranjeros residentes (horizontal).
 
-# GRÁFICO N° 4: Comparación de edad entre argentinos y extranjeros residentes.
-# Calcular estadísticas por grupo para usar en las etiquetas
+# Calcular media y mediana
 edades_media_mediana <- datos_combinados_entre_18y65 %>%
   group_by(origen) %>%
   summarise(
@@ -275,23 +209,39 @@ edades_media_mediana <- datos_combinados_entre_18y65 %>%
     mediana = median(CH06, na.rm = TRUE)
   )
 
-ggplot(datos_combinados_entre_18y65, aes(x = origen, y = CH06, fill = origen)) +
-  geom_boxplot(width = 0.5, outlier.shape = NA, alpha = 0.7) +  # Boxplot sin outliers y con ancho ajustado
-  stat_summary(fun = median, geom = "point", shape = 20, size = 4, color = "red") +  # Punto rojo para la mediana
-  # Etiqueta de la media (rojo)
+# Asegurar orden de los factores
+edades_media_mediana$origen <- factor(edades_media_mediana$origen,
+                                      levels = c("Argentinos", "Extranjeros"))
+
+# Gráfico
+ggplot(datos_combinados_entre_18y65,
+       aes(y = factor(origen, levels = c("Argentinos", "Extranjeros")),
+           x = CH06, fill = origen)) +
+  geom_boxplot(width = 0.5, outlier.shape = NA, alpha = 0.7) +
+  
+  # Punto para la media
+  geom_point(data = edades_media_mediana,
+             aes(x = media, y = origen),
+             color = "red", size = 3) +
+  
+  # Etiqueta de la media con 1 decimal
   geom_text(data = edades_media_mediana,
-            aes(x = origen, y = media, label = paste0("Media: ", round(media, 0))),
-            color = "darkred", vjust = -1) +
-  # Etiqueta de la mediana (azul)
+            aes(x = media, y = origen,
+                label = paste0("Media: ", format(round(media, 1), nsmall = 1))),
+            color = "darkred", nudge_y = 0.15) +
+  
+  # Etiqueta de la mediana sin decimales
   geom_text(data = edades_media_mediana,
-            aes(x = origen, y = mediana, label = paste0("Mediana: ", round(mediana, 0))),
-            color = "darkblue", vjust = 1.5) +
-  scale_y_continuous(breaks = seq(18, 80, 5)) +  # Eje Y con saltos de 5 años
+            aes(x = mediana, y = origen,
+                label = paste0("Mediana: ", round(mediana, 0))),
+            color = "blue", nudge_y = -0.35) +
+  
+  scale_x_continuous(breaks = seq(18, 70, 5)) +
   labs(title = "Comparación de Edad entre Argentinos y Extranjeros",
-       x = "Origen",
-       y = "Edad (años)",
-       fill = "Origen") +
-  theme_minimal()
+       x = "Edad (años)",
+       y = "Origen") +
+  theme_minimal() +
+  theme(legend.position = "none")
 
 # ANEXO I. GRÁFICO N° 1: Distribución relativa de la condición de actividad de origen
 # Calcular proporciones para el gráfico
@@ -346,6 +296,7 @@ ggplot(datos_prop_educacion_origen, aes(x = NIVEL_ED_group, y = prop, fill = ori
     fill = "Origen"
   ) +
   theme_minimal()
+datos_combinados_entre_18y65
 
 # ANEXO I. GRÁFICO N° 3: Proporción de Nacionalidad por aglomerado.
 # Calcular proporciones por aglomerado y origen
@@ -373,3 +324,4 @@ ggplot(datos_proporcion, aes(x = factor(AGLOMERADO), y = proporcion, fill = orig
     fill = "Nacionalidad"
   ) +
   theme_minimal()
+
