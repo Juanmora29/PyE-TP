@@ -81,8 +81,6 @@ datos_ocupacion <- datos_combinados_entre_18y65 %>%
     TRUE ~ "Otro"
   ))
 
-
-
 ### MODIFICACION GRÁFICOS 1 y 2 ###
 # Crear variable de rango de edad en intervalos de 6 años
 argentinos_entre_18y65$edad_rango <- cut(
@@ -100,6 +98,7 @@ extranjeros_entre_18y65$edad_rango <- cut(
 )
 
 
+# GRÁFICO N°1: Estado de actividad de las personas nacidas en Argentina
 ggplot(argentinos_entre_18y65, aes(x = edad_rango, fill = factor(ESTADO))) +
   geom_bar(position = "fill") +
   scale_y_reverse(labels = scales::percent_format()) +
@@ -115,6 +114,8 @@ ggplot(argentinos_entre_18y65, aes(x = edad_rango, fill = factor(ESTADO))) +
   ) +
   theme_minimal()
 
+
+# GRÁFICO N° 2: Estado de actividad de las personas nacidas en el Extranjero
 ggplot(extranjeros_entre_18y65, aes(x = edad_rango, fill = factor(ESTADO))) +
   geom_bar(position = "fill") +
   scale_y_reverse(labels = scales::percent_format()) +
@@ -130,14 +131,32 @@ ggplot(extranjeros_entre_18y65, aes(x = edad_rango, fill = factor(ESTADO))) +
   ) +
   theme_minimal()
 
+# GRÁFICO N° 3: Distribución relativa de la condición de actividad por origen.
+# Calcular proporciones para el gráfico
+datos_ocupacion_prop <- datos_ocupacion %>%
+  group_by(origen, ESTADO_group) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(origen) %>%
+  mutate(prop = n / sum(n))
+datos_ocupacion_prop
+
+# Gráfico de barras con etiquetas de proporción
+ggplot(datos_ocupacion_prop, aes(x = ESTADO_group, y = prop, fill = origen)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  geom_text(aes(label = scales::percent(prop, accuracy = 0.1)),
+            position = position_dodge(width = 0.9), vjust = -0.5, size = 4) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Distribución relativa de la condición de actividad por origen",
+    x = "Ocupación (agrupado)",
+    y = "Proporción dentro de cada grupo (%)",
+    fill = "Origen"
+  ) +
+  theme_minimal()
 
 
-
-# BOXPLOTS SEPARADOS DE INGRESOS DE ARGENTINOS Y EXTRANJEROS
-# BOXPLOT INGRESOS ARGENTINOS
+# GRÁFICO N° 4: Distribución de los ingresos totales individuales de los Argentinos.
 ingresos_argentinos <- (argentinos_entre_18y65 %>% filter(P47T >= 0))
-#limite_arg <- quantile(ingresos_argentinos$P47T, 0.99, na.rm = TRUE)
-#datos_argentinos_99 <- ingresos_argentinos %>% filter(P47T < limite_arg)
 
 # Calculo media y mediana
 ingresos_media_mediana_arg <- ingresos_argentinos %>%
@@ -162,14 +181,13 @@ ggplot(ingresos_argentinos, aes(x = origen, y = P47T, fill = origen)) +
   geom_text(data = ingresos_media_mediana_arg,
             aes(x = origen, y = mediana, label = paste0("Mediana: ", scales::comma(round(mediana, 0)))),
             color = "darkblue", vjust = 4.9, hjust = 0.4) +
-  coord_flip(ylim = c(0, 1400000)) +  # <- ESTA es la forma correcta
+  coord_flip(ylim = c(0, 1400000)) +
   theme_minimal() +
   theme(legend.position = "none")
 
-# BOXPLOT INGRESOS EXTRANJEROS
+
+#GRÁFICO N° 5: Distribución de los ingresos totales individuales de los Extranjeros
 ingresos_extranjeros <-(extranjeros_entre_18y65 %>% filter(P47T >= 0))
-#limite_ext <- quantile(ingresos_extranjeros$P47T, 0.99, na.rm = TRUE)
-#datos_extranjeros_99 <- ingresos_extranjeros %>% filter(P47T < limite_ext)
 
 # Calculo media y mediana
 ingresos_media_mediana_ext <- ingresos_extranjeros %>%
@@ -193,13 +211,12 @@ ggplot(ingresos_extranjeros, aes(x = origen, y = P47T, fill = origen)) +
             color = "darkred", vjust = -0.5, hjust = 0.15) +
   geom_text(data = ingresos_media_mediana_ext,
             aes(x = origen, y = mediana, label = paste0("Mediana: ", scales::comma(round(mediana, 0)))),
-            #aes(x = origen, y = mediana, label = paste0("Mediana: ", mediana)),
             color = "darkblue", vjust = 4.9, hjust = 0.4) +
-  coord_flip(ylim = c(0, 1764300)) +  # <- ESTA es la forma correcta
+  coord_flip(ylim = c(0, 1764300)) +
   theme_minimal() +
   theme(legend.position = "none")
-#######
-# GRÁFICO N° 4: Comparación de edad entre argentinos y extranjeros residentes (horizontal).
+
+# GRÁFICO N° 6: Comparación de edad entre argentinos y extranjeros residentes.
 
 # Calcular media y mediana
 edades_media_mediana <- datos_combinados_entre_18y65 %>%
@@ -243,30 +260,8 @@ ggplot(datos_combinados_entre_18y65,
   theme_minimal() +
   theme(legend.position = "none")
 
-# ANEXO I. GRÁFICO N° 1: Distribución relativa de la condición de actividad de origen
-# Calcular proporciones para el gráfico
-datos_ocupacion_prop <- datos_ocupacion %>%
-  group_by(origen, ESTADO_group) %>%
-  summarise(n = n(), .groups = "drop") %>%
-  group_by(origen) %>%
-  mutate(prop = n / sum(n))
-datos_ocupacion_prop
 
-# Gráfico de barras con etiquetas de proporción
-ggplot(datos_ocupacion_prop, aes(x = ESTADO_group, y = prop, fill = origen)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
-  geom_text(aes(label = scales::percent(prop, accuracy = 0.1)),
-            position = position_dodge(width = 0.9), vjust = -0.5, size = 4) +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(
-    title = "Distribución relativa de la condición de actividad por origen",
-    x = "Ocupación (agrupado)",
-    y = "Proporción dentro de cada grupo (%)",
-    fill = "Origen"
-  ) +
-  theme_minimal()
-
-# ANEXO I. GRÁFICO N° 2: Distribución relativa del nivel de educación por origen.
+# GRÁFICO N° 7: Distribución relativa del nivel de educación por origen.
 # Agrupar el nivel educativo en categorías
 datos_combinados_entre_18y65 <- datos_combinados_entre_18y65 %>%
   mutate(NIVEL_ED_group = case_when(
@@ -324,4 +319,3 @@ ggplot(datos_proporcion, aes(x = factor(AGLOMERADO), y = proporcion, fill = orig
     fill = "Nacionalidad"
   ) +
   theme_minimal()
-
